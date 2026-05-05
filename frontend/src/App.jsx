@@ -1,43 +1,104 @@
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
+import Dashboard  from "./pages/Dashboard";
+import Personas   from "./pages/Personas";
+import Bloques    from "./pages/Bloques";
+import Catalogos  from "./pages/Catalogos";
+import Registro   from "./pages/Registro";
 
-import Dashboard     from "./pages/Dashboard";
-import Personas      from "./pages/Personas";
-import Bloques       from "./pages/Bloques";
-import Catalogos     from "./pages/Catalogos";
+const NAV = [
+  { to: "/",          label: "Dashboard",  icon: "bi-speedometer2" },
+  { to: "/personas",  label: "Personas",   icon: "bi-people" },
+  { to: "/bloques",   label: "Bloques",    icon: "bi-collection" },
+  { to: "/catalogos", label: "Catálogos",  icon: "bi-tags" },
+];
 
-export default function App() {
+const PAGE_TITLES = {
+  "/":          "DASHBOARD",
+  "/personas":  "PERSONAS",
+  "/bloques":   "BLOQUES",
+  "/catalogos": "CATÁLOGOS",
+  "/registro":  "REGISTRO",
+};
+
+// Registro page goes fullscreen without sidebar
+function RegisterLayout() {
+  return <Registro />;
+}
+
+function AppLayout() {
+  const location = useLocation();
+  const title = PAGE_TITLES[location.pathname] || "LABURO";
+
   return (
-    <div className="d-flex">
-      {/* ── Sidebar ── */}
+    <div style={{ display: "flex" }}>
+      {/* ── SIDEBAR ── */}
       <aside className="sidebar">
-        <div className="brand">
-          <i className="bi bi-briefcase-fill me-2"></i>Laburo
+        <div className="sidebar-brand">
+          <div className="logo-icon">⚡</div>
+          <div>
+            <div className="logo-text">LABURO</div>
+            <div className="logo-sub">Sistema de Gestión</div>
+          </div>
         </div>
-        <nav className="d-flex flex-column gap-1">
-          <NavLink to="/" end className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
-            <i className="bi bi-speedometer2"></i> Dashboard
-          </NavLink>
-          <NavLink to="/personas" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
-            <i className="bi bi-people"></i> Personas
-          </NavLink>
-          <NavLink to="/bloques" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
-            <i className="bi bi-collection"></i> Bloques
-          </NavLink>
-          <NavLink to="/catalogos" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
-            <i className="bi bi-tags"></i> Catálogos
+
+        <nav className="sidebar-nav">
+          <div className="sidebar-section-label">Navegación</div>
+          {NAV.map(({ to, label, icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span className="nav-icon"><i className={`bi ${icon}`}></i></span>
+              {label}
+            </NavLink>
+          ))}
+
+          <div className="sidebar-section-label" style={{ marginTop: "1.5rem" }}>Acceso</div>
+          <NavLink
+            to="/registro"
+            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+          >
+            <span className="nav-icon"><i className="bi bi-person-plus"></i></span>
+            Registro público
           </NavLink>
         </nav>
+
+        <div className="sidebar-footer">
+          <div>v1.0.0 — 2025</div>
+          <div style={{ color: "var(--cyan)", marginTop: "0.25rem" }}>● ONLINE</div>
+        </div>
       </aside>
 
-      {/* ── Contenido principal ── */}
-      <main className="main-content flex-grow-1">
-        <Routes>
-          <Route path="/"          element={<Dashboard />} />
-          <Route path="/personas"  element={<Personas />} />
-          <Route path="/bloques"   element={<Bloques />} />
-          <Route path="/catalogos" element={<Catalogos />} />
-        </Routes>
+      {/* ── MAIN ── */}
+      <main className="main-content" style={{ flex: 1 }}>
+        <div className="topbar">
+          <span className="topbar-title">{title}</span>
+          <span className="topbar-status">SISTEMA ACTIVO</span>
+        </div>
+        <div className="page-body">
+          <Routes>
+            <Route path="/"          element={<Dashboard />} />
+            <Route path="/personas"  element={<Personas />} />
+            <Route path="/bloques"   element={<Bloques />} />
+            <Route path="/catalogos" element={<Catalogos />} />
+          </Routes>
+        </div>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  const location = useLocation();
+  const isRegister = location.pathname === "/registro";
+
+  if (isRegister) return <Routes><Route path="/registro" element={<RegisterLayout />} /></Routes>;
+
+  return (
+    <Routes>
+      <Route path="/*" element={<AppLayout />} />
+    </Routes>
   );
 }
