@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 
 export default function Dashboard() {
@@ -10,19 +11,29 @@ export default function Dashboard() {
   }, []);
 
   const stats = [
-    { label: "Personas",         value: counts.personas, icon: "bi-people-fill",     accent: "#00d4ff",  bg: "rgba(0,212,255,0.1)" },
-    { label: "Bloques activos",  value: counts.bloques,  icon: "bi-collection-fill", accent: "#00ff88",  bg: "rgba(0,255,136,0.1)" },
-    { label: "Niv. Académicos",  value: "6",             icon: "bi-mortarboard-fill",accent: "#ff6b35",  bg: "rgba(255,107,53,0.1)" },
-    { label: "Roles",            value: "3",             icon: "bi-shield-fill",     accent: "#7c3aed",  bg: "rgba(124,58,237,0.1)" },
+    { label: "Personas registradas", value: counts.personas, icon: "bi-people-fill",      bg: "#eff6ff", color: "var(--primary)" },
+    { label: "Bloques activos",       value: counts.bloques,  icon: "bi-collection-fill",  bg: "#f0fdf4", color: "var(--success)" },
+    { label: "Niveles académicos",    value: "6",              icon: "bi-mortarboard-fill", bg: "#fffbeb", color: "var(--warning)" },
+    { label: "Roles definidos",       value: "3",              icon: "bi-shield-fill",      bg: "#fdf4ff", color: "#9333ea" },
   ];
 
   return (
     <>
+      <div className="page-header">
+        <div>
+          <h4>Bienvenido al sistema 👋</h4>
+          <p>Panel general de gestión de personas y bloques</p>
+        </div>
+        <Link to="/registro" className="btn-primary-clean">
+          <i className="bi bi-person-plus"></i> Registro público
+        </Link>
+      </div>
+
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
         {stats.map((s) => (
-          <div key={s.label} className="stat-card" style={{ "--accent-color": s.accent }}>
-            <div className="stat-icon" style={{ background: s.bg, color: s.accent }}>
+          <div key={s.label} className="stat-card">
+            <div className="stat-icon" style={{ background: s.bg, color: s.color }}>
               <i className={`bi ${s.icon}`}></i>
             </div>
             <div className="stat-value">{s.value}</div>
@@ -31,67 +42,38 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Grid de info */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-        {/* Endpoints activos */}
-        <div className="tech-card">
-          <div className="tech-card-header">
-            <span>Endpoints activos</span>
-            <span className="header-accent"><i className="bi bi-activity"></i> LIVE</span>
-          </div>
-          <div style={{ padding: "1rem" }}>
+      {/* Quick access */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+        <div className="card">
+          <div className="card-header-clean"><h6><i className="bi bi-lightning-charge-fill" style={{ color: "var(--warning)" }}></i> Accesos rápidos</h6></div>
+          <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
             {[
-              ["GET", "/api/personas",                "#00d4ff"],
-              ["POST","  /api/personas",              "#00ff88"],
-              ["GET", "/api/bloques",                 "#00d4ff"],
-              ["GET", "/api/niveles-academicos",      "#00d4ff"],
-              ["GET", "/api/niveles-responsabilidad", "#00d4ff"],
-            ].map(([method, path, color], i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0.75rem", marginBottom: "0.3rem", borderRadius: "7px", background: "rgba(0,0,0,0.2)" }}>
-                <span style={{ fontFamily: "'Orbitron', monospace", fontSize: "0.6rem", fontWeight: 700, color, background: `${color}18`, border: `1px solid ${color}44`, borderRadius: "4px", padding: "2px 6px", minWidth: "40px", textAlign: "center" }}>{method}</span>
-                <span style={{ fontFamily: "monospace", fontSize: "0.8rem", color: "var(--text-secondary)" }}>{path}</span>
-              </div>
+              { to: "/personas",  icon: "bi-person-plus",   label: "Agregar nueva persona",   cls: "btn-primary-clean" },
+              { to: "/bloques",   icon: "bi-plus-circle",    label: "Crear nuevo bloque",      cls: "btn-outline-clean" },
+              { to: "/registro",  icon: "bi-qr-code",        label: "Formulario de registro",  cls: "btn-outline-clean" },
+              { to: "/catalogos", icon: "bi-tags",           label: "Gestionar catálogos",     cls: "btn-outline-clean" },
+            ].map(({ to, icon, label, cls }) => (
+              <Link key={label} to={to} className={cls} style={{ width: "100%", justifyContent: "flex-start" }}>
+                <i className={`bi ${icon}`}></i> {label}
+              </Link>
             ))}
           </div>
         </div>
 
-        {/* Sistema */}
-        <div className="tech-card">
-          <div className="tech-card-header">
-            <span>Estado del sistema</span>
-            <span className="header-accent"><i className="bi bi-cpu"></i></span>
-          </div>
+        <div className="card">
+          <div className="card-header-clean"><h6><i className="bi bi-info-circle-fill" style={{ color: "var(--primary)" }}></i> Información del sistema</h6></div>
           <div style={{ padding: "1.25rem" }}>
             {[
-              ["Base de datos",  "PostgreSQL",       "var(--green)"],
-              ["ORM / Driver",   "node-postgres (pg)","var(--cyan)"],
-              ["Backend",        "Express 4.x",       "var(--cyan)"],
-              ["Frontend",       "React + Vite",      "var(--cyan)"],
-              ["Estilos",        "Bootstrap + Custom","var(--orange)"],
+              ["Base de datos",  "PostgreSQL",        "var(--success)"],
+              ["Driver",         "node-postgres (pg)","var(--primary)"],
+              ["Backend",        "Node.js + Express", "var(--primary)"],
+              ["Frontend",       "React + Vite",      "var(--primary)"],
+              ["Estado",         "Operativo ✓",        "var(--success)"],
             ].map(([k, v, c]) => (
-              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "0.6rem 0", borderBottom: "1px solid var(--border)" }}>
-                <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>{k}</span>
-                <span style={{ fontSize: "0.82rem", fontWeight: 600, color: c }}>{v}</span>
+              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "0.55rem 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
+                <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>{k}</span>
+                <span style={{ color: c, fontWeight: 700 }}>{v}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Accesos rápidos */}
-        <div className="tech-card" style={{ gridColumn: "1 / -1" }}>
-          <div className="tech-card-header">
-            <span>Accesos rápidos</span>
-          </div>
-          <div style={{ padding: "1.25rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-            {[
-              { href: "/personas",  icon: "bi-person-plus", label: "Nueva persona",   cls: "btn-primary-tech" },
-              { href: "/bloques",   icon: "bi-plus-circle",  label: "Nuevo bloque",   cls: "btn-success-tech" },
-              { href: "/registro",  icon: "bi-qr-code",      label: "Registro público",cls: "btn-ghost-tech" },
-              { href: "/catalogos", icon: "bi-tags",         label: "Ver catálogos",  cls: "btn-ghost-tech" },
-            ].map(({ href, icon, label, cls }) => (
-              <a key={label} href={href} className={`btn-tech ${cls}`}>
-                <i className={`bi ${icon}`}></i> {label}
-              </a>
             ))}
           </div>
         </div>

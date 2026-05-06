@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import Modal from "../components/Modal";
 
 function CatalogoCard({ title, endpoint, icon, accentColor }) {
   const [items,     setItems]     = useState([]);
   const [loading,   setLoading]   = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [nombre,    setNombre]    = useState("");
   const [editId,    setEditId]    = useState(null);
   const [saving,    setSaving]    = useState(false);
   const [formError, setFormError] = useState(null);
-  const modalId = `modal-cat-${endpoint.replace(/\//g, "-")}`;
 
   const fetch = () => {
     setLoading(true);
@@ -17,15 +18,8 @@ function CatalogoCard({ title, endpoint, icon, accentColor }) {
 
   useEffect(() => { fetch(); }, []);
 
-  const openModal = (item = null) => {
-    setFormError(null);
-    if (item) { setEditId(item.id); setNombre(item.nombre); }
-    else      { setEditId(null);   setNombre(""); }
-    new window.bootstrap.Modal(document.getElementById(modalId)).show();
-  };
-
-  const closeModal = () =>
-    window.bootstrap.Modal.getInstance(document.getElementById(modalId))?.hide();
+  const openNew  = () => { setEditId(null); setNombre(""); setFormError(null); setModalOpen(true); };
+  const openEdit = (item) => { setEditId(item.id); setNombre(item.nombre); setFormError(null); setModalOpen(true); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +27,7 @@ function CatalogoCard({ title, endpoint, icon, accentColor }) {
     setSaving(true); setFormError(null);
     try {
       editId ? await api.put(`${endpoint}/${editId}`, { nombre }) : await api.post(endpoint, { nombre });
-      closeModal(); fetch();
+      setModalOpen(false); fetch();
     } catch (err) {
       setFormError(err.response?.data?.error || "Error al guardar.");
     } finally { setSaving(false); }
@@ -42,38 +36,37 @@ function CatalogoCard({ title, endpoint, icon, accentColor }) {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar este registro?")) return;
     try { await api.delete(`${endpoint}/${id}`); fetch(); }
-    catch { alert("No se pudo eliminar. Puede estar en uso."); }
+    catch { alert("No se puede eliminar: está en uso."); }
   };
 
   return (
     <>
-      <div className="tech-card" style={{ height: "100%" }}>
-        <div className="tech-card-header">
-          <span className="header-accent" style={{ color: accentColor }}>
+      <div className="card" style={{ height: "100%" }}>
+        <div className="card-header-clean">
+          <h6 style={{ color: accentColor }}>
             <i className={`bi ${icon}`}></i> {title}
-          </span>
-          <button className="btn-tech btn-primary-tech" style={{ padding: "0.35rem 0.85rem", fontSize: "0.72rem" }} onClick={() => openModal()}>
+          </h6>
+          <button className="btn-primary-clean" style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem" }} onClick={openNew}>
             <i className="bi bi-plus-lg"></i> Agregar
           </button>
         </div>
-
         {loading ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}><div className="spinner-tech"></div></div>
+          <div className="empty-state" style={{ padding: "2rem" }}><div className="spinner spinner-blue" style={{ width: 22, height: 22, borderWidth: 3 }}></div></div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table className="tech-table">
-              <thead><tr><th>ID</th><th>Nombre</th><th></th></tr></thead>
+            <table className="clean-table">
+              <thead><tr><th>ID</th><th>Nombre</th><th style={{ textAlign: "right" }}>Acciones</th></tr></thead>
               <tbody>
                 {items.length === 0 ? (
-                  <tr><td colSpan={3} style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>Sin registros</td></tr>
+                  <tr><td colSpan={3}><div className="empty-state" style={{ padding: "1.5rem" }}><i className="bi bi-inbox"></i><p>Sin registros</p></div></td></tr>
                 ) : items.map((item) => (
                   <tr key={item.id}>
                     <td className="td-id">#{item.id}</td>
-                    <td style={{ fontWeight: 500 }}>{item.nombre}</td>
+                    <td style={{ fontWeight: 600 }}>{item.nombre}</td>
                     <td>
                       <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
-                        <button className="btn-tech btn-ghost-tech btn-icon" onClick={() => openModal(item)} title="Editar"><i className="bi bi-pencil"></i></button>
-                        <button className="btn-tech btn-danger-tech btn-icon" onClick={() => handleDelete(item.id)} title="Eliminar"><i className="bi bi-trash"></i></button>
+                        <button className="btn-icon-edit" onClick={() => openEdit(item)} title="Editar"><i className="bi bi-pencil"></i></button>
+                        <button className="btn-icon-del"  onClick={() => handleDelete(item.id)} title="Eliminar"><i className="bi bi-trash"></i></button>
                       </div>
                     </td>
                   </tr>
@@ -84,31 +77,23 @@ function CatalogoCard({ title, endpoint, icon, accentColor }) {
         )}
       </div>
 
-      {/* Modal */}
-      <div className="modal fade modal-tech" id={modalId} tabIndex="-1">
-        <div className="modal-dialog modal-sm">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" style={{ color: accentColor }}>{editId ? "✎ Editar" : "⊕ Nuevo"} — {title}</h5>
-              <button type="button" className="btn-close" onClick={closeModal}></button>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div className="modal-body">
-                {formError && <div className="alert-tech" style={{ marginBottom: "1rem" }}>{formError}</div>}
-                <label className="form-label-tech">Nombre <span style={{ color: "var(--orange)" }}>*</span></label>
-                <input className="form-control-tech" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del registro" autoFocus />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-tech btn-ghost-tech" onClick={closeModal}>Cancelar</button>
-                <button type="submit" className="btn-tech btn-primary-tech" disabled={saving}>
-                  {saving ? <span className="spinner-tech"></span> : <i className="bi bi-check-lg"></i>}
-                  {editId ? "Guardar" : "Crear"}
-                </button>
-              </div>
-            </form>
-          </div>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`${editId ? "Editar" : "Nuevo"} — ${title}`} icon={icon} size="sm"
+        footer={
+          <>
+            <button className="btn-outline-clean" onClick={() => setModalOpen(false)}>Cancelar</button>
+            <button className="btn-primary-clean" onClick={handleSubmit} disabled={saving}>
+              {saving ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }}></span> : <i className="bi bi-check-lg"></i>}
+              {editId ? "Guardar" : "Crear"}
+            </button>
+          </>
+        }
+      >
+        {formError && <div className="alert-error"><i className="bi bi-exclamation-triangle"></i>{formError}</div>}
+        <div className="form-group">
+          <label className="form-label-clean">Nombre *</label>
+          <input className="form-control-clean" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del registro" autoFocus />
         </div>
-      </div>
+      </Modal>
     </>
   );
 }
@@ -116,10 +101,10 @@ function CatalogoCard({ title, endpoint, icon, accentColor }) {
 export default function Catalogos() {
   return (
     <>
-      <h4 className="page-heading" style={{ marginBottom: "1.5rem" }}>Catálogos</h4>
+      <div className="page-header"><div><h4>Catálogos</h4><p>Gestión de niveles académicos y de responsabilidad</p></div></div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-        <CatalogoCard title="Niveles Académicos"      endpoint="/niveles-academicos"      icon="bi-mortarboard"  accentColor="var(--cyan)"   />
-        <CatalogoCard title="Niveles Responsabilidad" endpoint="/niveles-responsabilidad" icon="bi-shield-check" accentColor="var(--green)"  />
+        <CatalogoCard title="Niveles Académicos"       endpoint="/niveles-academicos"      icon="bi-mortarboard"  accentColor="var(--primary)" />
+        <CatalogoCard title="Niveles Responsabilidad"  endpoint="/niveles-responsabilidad" icon="bi-shield-check" accentColor="var(--success)" />
       </div>
     </>
   );
