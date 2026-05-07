@@ -75,7 +75,7 @@ function AppLayout() {
           </NavLink>
         </nav>
 
-        <div className="sidebar-footer">Laburo v1.0 — 2025</div>
+        <div className="sidebar-footer">Laburo v1.0 — 2026</div>
       </aside>
 
       {/* Main */}
