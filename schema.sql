@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- ============================================================
 --  laburo_db  |  Schema relacional
 -- ============================================================
@@ -13,7 +14,8 @@ CREATE TABLE nivel_academico (
 INSERT INTO nivel_academico (nombre) VALUES
     ('Ninguno'),
     ('Bachiller'),
-    ('Técnico'),
+    ('Técnico Medio'),
+    ('Técnico Superios'),
     ('Licenciado'),
     ('Maestría'),
     ('Doctorado');

@@ -17,6 +17,21 @@ export default function Dashboard() {
     { label: "Roles definidos",       value: "3",              icon: "bi-shield-fill",      bg: "#fdf4ff", color: "#9333ea" },
   ];
 
+  const quickLinks = [
+    { to: "/personas",  icon: "bi-person-plus",  label: "Agregar nueva persona",  cls: "btn-primary-clean" },
+    { to: "/bloques",   icon: "bi-plus-circle",   label: "Crear nuevo bloque",     cls: "btn-outline-clean" },
+    { to: "/registro",  icon: "bi-qr-code",       label: "Formulario de registro", cls: "btn-outline-clean" },
+    { to: "/catalogos", icon: "bi-tags",          label: "Gestionar catálogos",    cls: "btn-outline-clean" },
+  ];
+
+  const sysInfo = [
+    ["Base de datos",  "PostgreSQL",         "var(--success)"],
+    ["Driver",         "node-postgres (pg)", "var(--primary)"],
+    ["Backend",        "Node.js + Express",  "var(--primary)"],
+    ["Frontend",       "React + Vite",       "var(--primary)"],
+    ["Estado",         "Operativo ✓",         "var(--success)"],
+  ];
+
   return (
     <>
       <div className="page-header">
@@ -29,8 +44,11 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
+      {/* Stats — 2 col en móvil, 4 en desktop */}
+      <div
+        className="stat-grid"
+        style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2rem" }}
+      >
         {stats.map((s) => (
           <div key={s.label} className="stat-card">
             <div className="stat-icon" style={{ background: s.bg, color: s.color }}>
@@ -42,18 +60,21 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Quick access */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+      {/* Info grid */}
+      <div
+        className="info-grid"
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}
+      >
         <div className="card">
-          <div className="card-header-clean"><h6><i className="bi bi-lightning-charge-fill" style={{ color: "var(--warning)" }}></i> Accesos rápidos</h6></div>
-          <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            {[
-              { to: "/personas",  icon: "bi-person-plus",   label: "Agregar nueva persona",   cls: "btn-primary-clean" },
-              { to: "/bloques",   icon: "bi-plus-circle",    label: "Crear nuevo bloque",      cls: "btn-outline-clean" },
-              { to: "/registro",  icon: "bi-qr-code",        label: "Formulario de registro",  cls: "btn-outline-clean" },
-              { to: "/catalogos", icon: "bi-tags",           label: "Gestionar catálogos",     cls: "btn-outline-clean" },
-            ].map(({ to, icon, label, cls }) => (
-              <Link key={label} to={to} className={cls} style={{ width: "100%", justifyContent: "flex-start" }}>
+          <div className="card-header-clean">
+            <h6><i className="bi bi-lightning-charge-fill" style={{ color: "var(--warning)" }}></i> Accesos rápidos</h6>
+          </div>
+          <div
+            className="quick-access-grid"
+            style={{ padding: "1.25rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}
+          >
+            {quickLinks.map(({ to, icon, label, cls }) => (
+              <Link key={label} to={to} className={cls} style={{ justifyContent: "flex-start", fontSize: "0.85rem" }}>
                 <i className={`bi ${icon}`}></i> {label}
               </Link>
             ))}
@@ -61,15 +82,11 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <div className="card-header-clean"><h6><i className="bi bi-info-circle-fill" style={{ color: "var(--primary)" }}></i> Información del sistema</h6></div>
+          <div className="card-header-clean">
+            <h6><i className="bi bi-info-circle-fill" style={{ color: "var(--primary)" }}></i> Información del sistema</h6>
+          </div>
           <div style={{ padding: "1.25rem" }}>
-            {[
-              ["Base de datos",  "PostgreSQL",        "var(--success)"],
-              ["Driver",         "node-postgres (pg)","var(--primary)"],
-              ["Backend",        "Node.js + Express", "var(--primary)"],
-              ["Frontend",       "React + Vite",      "var(--primary)"],
-              ["Estado",         "Operativo ✓",        "var(--success)"],
-            ].map(([k, v, c]) => (
+            {sysInfo.map(([k, v, c]) => (
               <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "0.55rem 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
                 <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>{k}</span>
                 <span style={{ color: c, fontWeight: 700 }}>{v}</span>
