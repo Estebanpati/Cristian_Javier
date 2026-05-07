@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+
+  # ── Base de datos PostgreSQL ──────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: laburo_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       laburo_db
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Deadpool1243}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laburo_net
+
+  # ── Backend Express ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laburo_backend
+    restart: unless-stopped
+    environment:
+      DB_HOST:     db
+      DB_PORT:     5432
+      DB_NAME:     laburo_db
+      DB_USER:     postgres
+      DB_PASSWORD: ${DB_PASSWORD:-laburo1234}
+      PORT:        3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - laburo_net
+
+  # ── Frontend React (Nginx) ────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: laburo_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - laburo_net
+
+volumes:
+  db_data:
+
+networks:
+  laburo_net:
+    driver: bridge
